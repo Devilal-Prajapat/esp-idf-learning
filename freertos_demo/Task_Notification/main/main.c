@@ -14,24 +14,39 @@ void vTask1( void * pvParameters)
     while (true)
     {
         printf("%s running\r\n",(char *)pvParameters);
-        // TaskNotify(xTaskToNotify,ulValue,eAction)
-        xTaskNotify(task2, count++, eSetValueWithOverwrite);
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        /*
+            TaskNotify(xTaskToNotify,ulValue,eAction)
+            typedef enum
+            {
+                eNoAction = 0,           
+                eSetBits,                
+                eIncrement,              
+                eSetValueWithOverwrite,  
+                eSetValueWithoutOverwrite
+            } eNotifyAction;
+        */
+
+        xTaskNotify(task2, 1<<0, eSetBits);
+        vTaskDelay(pdMS_TO_TICKS(100));
+        xTaskNotify(task2, 1<<1, eSetBits);
+        vTaskDelay(pdMS_TO_TICKS(100));
+        xTaskNotify(task2, 1<<2, eSetBits);
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
     vTaskDelete(NULL);   
 }
 
 void vTask2( void * pvParameters)
 {
-
     while (true)
     {
         uint32_t  notify_val;
-        if(xTaskNotifyWait(false, false, &notify_val, pdMS_TO_TICKS(1000)))
+        if(xTaskNotifyWait(true, false, &notify_val, pdMS_TO_TICKS(100)))
         {
             printf("%s notify val: %ld\r\n",(char *)pvParameters, notify_val);
         }
-        else{
+        else
+        {
             printf("Notify Timeout\r\n");
         }
     }
@@ -50,7 +65,7 @@ void app_main(void)
         TaskHandle_t *const pxCreatedTask
         )
     */
-    xTaskCreate(vTask2,"Task-2", 2*1024, "Task 2", 2, &task2);
+    xTaskCreate(vTask2,"Task-2", 2*1024, "Task 2", 1, &task2);
     xTaskCreate(vTask1,"Task-1", 2*1024, "Task 1", 1, &task1);
    
 }
