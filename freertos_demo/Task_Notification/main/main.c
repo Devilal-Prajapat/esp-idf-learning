@@ -10,10 +10,12 @@ static TaskHandle_t task2;
 
 void vTask1( void * pvParameters)
 {
+    uint32_t count = 0;
     while (true)
     {
         printf("%s running\r\n",(char *)pvParameters);
-        xTaskNotifyGive(task2);
+        // TaskNotify(xTaskToNotify,ulValue,eAction)
+        xTaskNotify(task2, count++, eSetValueWithOverwrite);
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
     vTaskDelete(NULL);   
@@ -24,8 +26,8 @@ void vTask2( void * pvParameters)
 
     while (true)
     {
-        uint32_t  notify_val = ulTaskNotifyTake(true, pdMS_TO_TICKS(1000));
-        if(notify_val != 0)
+        uint32_t  notify_val;
+        if(xTaskNotifyWait(false, false, &notify_val, pdMS_TO_TICKS(1000)))
         {
             printf("%s notify val: %ld\r\n",(char *)pvParameters, notify_val);
         }
